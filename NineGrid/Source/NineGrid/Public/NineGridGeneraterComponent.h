@@ -29,23 +29,26 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class NINEGRID_API UNineGridGeneraterComponent : public UActorComponent
 {
 	GENERATED_BODY()
-		UStaticMesh* mstaticmesh;
+		//UStaticMesh* mstaticmesh;
 		FVector boundsize;
 public:	
 	// Sets default values for this component's properties
 	UNineGridGeneraterComponent();
-
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AActor> Cellclass;
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	bool b_xzplane;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	AActor* spawncell(FVector location, UStaticMesh* mstaticmesh);
+	AActor* spawncell(FVector location);
 
 	Cell_z cellzs[9];
 
 	void resetallcell();
 	Cell_z* detectedcellbyoffset(FVector detectedlocation);
 	Cell_z *findadeserved(FVector center);
-
+	AActor* spawncentercell(FVector location);
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
