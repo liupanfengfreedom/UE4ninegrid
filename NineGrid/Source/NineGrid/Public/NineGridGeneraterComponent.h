@@ -29,8 +29,9 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class NINEGRID_API UNineGridGeneraterComponent : public UActorComponent
 {
 	GENERATED_BODY()
-		//UStaticMesh* mstaticmesh;
-		FVector boundsize;
+	FTimerHandle th;
+	void timerworker();
+	FVector boundsize;
 public:	
 	// Sets default values for this component's properties
 	UNineGridGeneraterComponent();
