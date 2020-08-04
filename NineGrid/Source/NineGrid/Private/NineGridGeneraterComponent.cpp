@@ -8,7 +8,7 @@ UNineGridGeneraterComponent::UNineGridGeneraterComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	//PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -90,8 +90,7 @@ void UNineGridGeneraterComponent::BeginPlay()
 		cellzs[8] = tcz;
 	}
 
-	
-
+	GetWorld()->GetTimerManager().SetTimer(th,this,&UNineGridGeneraterComponent::timerworker,2,true,2);
 }
 AActor* UNineGridGeneraterComponent::spawncell(FVector location)
 {
@@ -100,6 +99,8 @@ AActor* UNineGridGeneraterComponent::spawncell(FVector location)
 	FActorSpawnParameters ActorSpawnParams;
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	AActor* mactor = GetWorld()->SpawnActor<AActor>(Cellclass, Location, Rotation, ActorSpawnParams);
+	
+	onfindnewspawnpointevent.Broadcast(location, boundsize, b_xzplane);
 	return mactor;
 }
 AActor* UNineGridGeneraterComponent::spawncentercell(FVector location)
@@ -113,262 +114,236 @@ AActor* UNineGridGeneraterComponent::spawncentercell(FVector location)
 	mactor->GetActorBounds(false,original,boundsize);
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, boundsize.ToString().Append(" :boundsize"));
 
+	onfindnewspawnpointevent.Broadcast(location, boundsize, b_xzplane);
+
 	return mactor;
+}
+void UNineGridGeneraterComponent::timerworker()
+{
+		FVector location = GetOwner()->GetActorLocation();
+		auto movecellf = [=](const FVector& centerlocationpara,const FVector& positionpara) {
+			Cell_z* fcellp = findadeserved(centerlocationpara);
+			check(fcellp);
+			fcellp->mcell->SetActorLocation(positionpara);
+			onfindnewspawnpointevent.Broadcast(positionpara, boundsize, b_xzplane);
+
+		};
+		for (int i = 0; i < 9; i++)
+		{
+			if (cellzs[i].iscenter)
+			{
+				continue;
+			}
+			if (b_xzplane)
+			{
+				float deltax = cellzs[i].mcell->GetActorLocation().X - location.X;
+				if (deltax < 0)
+				{
+					deltax = -deltax;
+				}
+				float deltay = cellzs[i].mcell->GetActorLocation().Z - location.Z;
+				if (deltay < 0)
+				{
+					deltay = -deltay;
+				}
+				if (deltax < (boundsize.X) && deltay < (boundsize.Z))
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
+
+					resetallcell();
+					cellzs[i].iscenter = true;
+					FVector centerlocation = cellzs[i].mcell->GetActorLocation();
+					FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
+					Cell_z* cellp = detectedcellbyoffset(up);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation,up);
+					}
+					FVector down = centerlocation + FVector(-boundsize.X * 2, 0, 0);
+					cellp = detectedcellbyoffset(down);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, down);
+					}
+					FVector left = centerlocation + FVector(0, 0, -boundsize.Z * 2);
+					cellp = detectedcellbyoffset(left);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, left);
+					}
+					FVector right = centerlocation + FVector(0, 0, boundsize.Z * 2);
+					cellp = detectedcellbyoffset(right);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, right);
+					}
+					FVector up_right = centerlocation + FVector(boundsize.X * 2, 0, boundsize.Z * 2);
+					cellp = detectedcellbyoffset(up_right);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, up_right);
+					}
+					FVector right_down = centerlocation + FVector(-boundsize.X * 2, 0, boundsize.Z * 2);
+					cellp = detectedcellbyoffset(right_down);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, right_down);
+					}
+					FVector down_left = centerlocation + FVector(-boundsize.X * 2, 0, -boundsize.Z * 2);
+					cellp = detectedcellbyoffset(down_left);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, down_left);
+					}
+					FVector left_up = centerlocation + FVector(boundsize.X * 2, 0, -boundsize.Z * 2);
+					cellp = detectedcellbyoffset(left_up);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, left_up);
+					}
+				}
+			}
+			else
+			{
+				float deltax = cellzs[i].mcell->GetActorLocation().X - location.X;
+				if (deltax < 0)
+				{
+					deltax = -deltax;
+				}
+				float deltay = cellzs[i].mcell->GetActorLocation().Y - location.Y;
+				if (deltay < 0)
+				{
+					deltay = -deltay;
+				}
+				if (deltax < (boundsize.X) && deltay < (boundsize.Y))
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
+
+					resetallcell();
+					cellzs[i].iscenter = true;
+					FVector centerlocation = cellzs[i].mcell->GetActorLocation();
+
+					FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
+					Cell_z* cellp = detectedcellbyoffset(up);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, up);
+					}
+					FVector down = centerlocation + FVector(-boundsize.X * 2, 0, 0);
+					cellp = detectedcellbyoffset(down);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, down);
+					}
+					FVector left = centerlocation + FVector(0, -boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(left);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, left);
+					}
+					FVector right = centerlocation + FVector(0, boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(right);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, right);
+					}
+					FVector up_right = centerlocation + FVector(boundsize.X * 2, boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(up_right);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, up_right);
+					}
+					FVector right_down = centerlocation + FVector(-boundsize.X * 2, boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(right_down);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, right_down);
+					}
+					FVector down_left = centerlocation + FVector(-boundsize.X * 2, -boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(down_left);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, down_left);
+					}
+					FVector left_up = centerlocation + FVector(boundsize.X * 2, -boundsize.Y * 2, 0);
+					cellp = detectedcellbyoffset(left_up);
+					if (cellp)
+					{
+						cellp->beserved = true;
+					}
+					else
+					{
+						movecellf(centerlocation, left_up);
+					}
+				}
+			}
+
+		}
 }
 // Called every frame
 void UNineGridGeneraterComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	//FString str = GetOwner()->GetActorLocation().ToString();
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, str);
-	// ...
-	FVector location = GetOwner()->GetActorLocation();
-
-	for (int i = 0; i < 9; i++)
-	{
-		if (cellzs[i].iscenter)
-		{
-			continue;
-		}
-		if (b_xzplane)
-		{
-			float deltax = cellzs[i].mcell->GetActorLocation().X - location.X;
-			if (deltax < 0)
-			{
-				deltax = -deltax;
-			}
-			float deltay = cellzs[i].mcell->GetActorLocation().Z - location.Z;
-			if (deltay < 0)
-			{
-				deltay = -deltay;
-			}
-			if (deltax < (boundsize.X) && deltay < (boundsize.Z))
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
-
-				resetallcell();
-				cellzs[i].iscenter = true;
-				FVector centerlocation = cellzs[i].mcell->GetActorLocation();
-
-				FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
-				Cell_z* cellp = detectedcellbyoffset(up);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(up);
-				}
-				FVector down = centerlocation + FVector(-boundsize.X * 2, 0, 0);
-				cellp = detectedcellbyoffset(down);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(down);
-				}
-				FVector left = centerlocation + FVector(0, 0, -boundsize.Z * 2);
-				cellp = detectedcellbyoffset(left);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(left);
-				}
-				FVector right = centerlocation + FVector(0, 0, boundsize.Z * 2);
-				cellp = detectedcellbyoffset(right);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(right);
-				}
-				FVector up_right = centerlocation + FVector(boundsize.X * 2, 0, boundsize.Z * 2);
-				cellp = detectedcellbyoffset(up_right);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(up_right);
-				}
-				FVector right_down = centerlocation + FVector(-boundsize.X * 2, 0, boundsize.Z * 2);
-				cellp = detectedcellbyoffset(right_down);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(right_down);
-				}
-				FVector down_left = centerlocation + FVector(-boundsize.X * 2, 0, -boundsize.Z * 2);
-				cellp = detectedcellbyoffset(down_left);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(down_left);
-				}
-				FVector left_up = centerlocation + FVector(boundsize.X * 2, 0, -boundsize.Z * 2);
-				cellp = detectedcellbyoffset(left_up);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(left_up);
-				}
-			}
-		}
-		else
-		{
-			float deltax = cellzs[i].mcell->GetActorLocation().X - location.X;
-			if (deltax < 0)
-			{
-				deltax = -deltax;
-			}
-			float deltay = cellzs[i].mcell->GetActorLocation().Y - location.Y;
-			if (deltay < 0)
-			{
-				deltay = -deltay;
-			}
-			if (deltax < (boundsize.X) && deltay < (boundsize.Y))
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
-
-				resetallcell();
-				cellzs[i].iscenter = true;
-				FVector centerlocation = cellzs[i].mcell->GetActorLocation();
-
-				FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
-				Cell_z* cellp = detectedcellbyoffset(up);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(up);
-				}
-				FVector down = centerlocation + FVector(-boundsize.X * 2, 0, 0);
-				cellp = detectedcellbyoffset(down);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(down);
-				}
-				FVector left = centerlocation + FVector(0, -boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(left);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(left);
-				}
-				FVector right = centerlocation + FVector(0, boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(right);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(right);
-				}
-				FVector up_right = centerlocation + FVector(boundsize.X * 2, boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(up_right);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(up_right);
-				}
-				FVector right_down = centerlocation + FVector(-boundsize.X * 2, boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(right_down);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(right_down);
-				}
-				FVector down_left = centerlocation + FVector(-boundsize.X * 2, -boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(down_left);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(down_left);
-				}
-				FVector left_up = centerlocation + FVector(boundsize.X * 2, -boundsize.Y * 2, 0);
-				cellp = detectedcellbyoffset(left_up);
-				if (cellp)
-				{
-					cellp->beserved = true;
-				}
-				else
-				{
-					Cell_z* fcellp = findadeserved(centerlocation);
-					check(fcellp);
-					fcellp->mcell->SetActorLocation(left_up);
-				}
-			}
-		}
-		   
-	}
-
 }
 void UNineGridGeneraterComponent::resetallcell()
 {

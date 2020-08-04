@@ -29,9 +29,13 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class NINEGRID_API UNineGridGeneraterComponent : public UActorComponent
 {
 	GENERATED_BODY()
-		//UStaticMesh* mstaticmesh;
-		FVector boundsize;
-public:	
+	FTimerHandle th;
+	void timerworker();
+	FVector boundsize;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnfindnewspawnpoint, const FVector&, location, const FVector&, boundsize, bool, b_isxzplane);
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnfindnewspawnpoint onfindnewspawnpointevent;
 	// Sets default values for this component's properties
 	UNineGridGeneraterComponent();
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
