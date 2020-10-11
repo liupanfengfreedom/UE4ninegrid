@@ -19,78 +19,87 @@ void UNineGridGeneraterComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//UClass* gridclass = LoadClass<AActor>(NULL,TEXT(""));
-	FVector vec = GetOwner()->GetActorLocation();
-	if (b_xzplane)
-	{
-		vec.Y -= 100;
-		Cell_z tcz;
-		tcz.mcell = spawncentercell(vec);
-		tcz.beserved = true;
-		tcz.iscenter = true;
-		cellzs[0] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, 0));
-		tcz.beserved = true;
-		tcz.iscenter = false;
-		cellzs[1] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, 0));
-		tcz.beserved = true;
-		cellzs[2] = tcz;
-		tcz.mcell = spawncell(vec + FVector(0, 0, -boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[3] = tcz;
-		tcz.mcell = spawncell(vec + FVector(0, 0, boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[4] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[5] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[6] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, -boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[7] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, -boundsize.Z * 2));
-		tcz.beserved = true;
-		cellzs[8] = tcz;
-	}
-	else
-	{
-		vec.Z -= 100;
-		Cell_z tcz;
-		tcz.mcell = spawncentercell(vec);
-		tcz.beserved = true;
-		tcz.iscenter = true;
-		cellzs[0] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, 0));
-		tcz.beserved = true;
-		tcz.iscenter = false;
-		cellzs[1] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, 0));
-		tcz.beserved = true;
-		cellzs[2] = tcz;
-		tcz.mcell = spawncell(vec + FVector(0, -boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[3] = tcz;
-		tcz.mcell = spawncell(vec + FVector(0, boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[4] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[5] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[6] = tcz;
-		tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, -boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[7] = tcz;
-		tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, -boundsize.Y * 2, 0));
-		tcz.beserved = true;
-		cellzs[8] = tcz;
-	}
+	Async(EAsyncExecution::ThreadPool, [=]() {
+		FPlatformProcess::Sleep(0.05);
+		AsyncTask(ENamedThreads::GameThread,
+			[=]()
+			{
+				FVector vec = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * forwardoffset);
+				if (b_xzplane)
+				{
+					vec.Y -= 100;
+					Cell_z tcz;
+					tcz.mcell = spawncentercell(vec);
+					tcz.beserved = true;
+					tcz.iscenter = true;
+					cellzs[0] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, 0));
+					tcz.beserved = true;
+					tcz.iscenter = false;
+					cellzs[1] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, 0));
+					tcz.beserved = true;
+					cellzs[2] = tcz;
+					tcz.mcell = spawncell(vec + FVector(0, 0, -boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[3] = tcz;
+					tcz.mcell = spawncell(vec + FVector(0, 0, boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[4] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[5] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[6] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, -boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[7] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, -boundsize.Z * 2));
+					tcz.beserved = true;
+					cellzs[8] = tcz;
+				}
+				else
+				{
+					vec.Z -= 100;
+					Cell_z tcz;
+					tcz.mcell = spawncentercell(vec);
+					tcz.beserved = true;
+					tcz.iscenter = true;
+					cellzs[0] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, 0, 0));
+					tcz.beserved = true;
+					tcz.iscenter = false;
+					cellzs[1] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, 0, 0));
+					tcz.beserved = true;
+					cellzs[2] = tcz;
+					tcz.mcell = spawncell(vec + FVector(0, -boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[3] = tcz;
+					tcz.mcell = spawncell(vec + FVector(0, boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[4] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[5] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[6] = tcz;
+					tcz.mcell = spawncell(vec + FVector(-boundsize.X * 2, -boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[7] = tcz;
+					tcz.mcell = spawncell(vec + FVector(boundsize.X * 2, -boundsize.Y * 2, 0));
+					tcz.beserved = true;
+					cellzs[8] = tcz;
+				}
 
-	GetWorld()->GetTimerManager().SetTimer(th,this,&UNineGridGeneraterComponent::timerworker,2,true,2);
+			}
+		);
+		}, nullptr);
+	//UClass* gridclass = LoadClass<AActor>(NULL,TEXT(""));
+
+	GetWorld()->GetTimerManager().SetTimer(th,this,&UNineGridGeneraterComponent::timerworker,0.1,true,0.1);
 }
 AActor* UNineGridGeneraterComponent::spawncell(FVector location)
 {
@@ -100,7 +109,7 @@ AActor* UNineGridGeneraterComponent::spawncell(FVector location)
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	AActor* mactor = GetWorld()->SpawnActor<AActor>(Cellclass, Location, Rotation, ActorSpawnParams);
 	
-	onfindnewspawnpointevent.Broadcast(location, boundsize, b_xzplane);
+	onfindnewspawnpointevent.Broadcast(location,location, boundsize, b_xzplane);
 	return mactor;
 }
 AActor* UNineGridGeneraterComponent::spawncentercell(FVector location)
@@ -114,19 +123,20 @@ AActor* UNineGridGeneraterComponent::spawncentercell(FVector location)
 	mactor->GetActorBounds(false,original,boundsize);
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, boundsize.ToString().Append(" :boundsize"));
 
-	onfindnewspawnpointevent.Broadcast(location, boundsize, b_xzplane);
-
+	onfindnewspawnpointevent.Broadcast(location,location, boundsize, b_xzplane);
+	onfindnewcenterevent.Broadcast(precenterlocation, location, boundsize, b_xzplane);
+	precenterlocation = location;
 	return mactor;
 }
 void UNineGridGeneraterComponent::timerworker()
 {
-		FVector location = GetOwner()->GetActorLocation();
+		FVector location = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector()* forwardoffset);
 		auto movecellf = [=](const FVector& centerlocationpara,const FVector& positionpara) {
 			Cell_z* fcellp = findadeserved(centerlocationpara);
 			check(fcellp);
+			FVector oldlocation = fcellp->mcell->GetActorLocation();
 			fcellp->mcell->SetActorLocation(positionpara);
-			onfindnewspawnpointevent.Broadcast(positionpara, boundsize, b_xzplane);
-
+			onfindnewspawnpointevent.Broadcast(oldlocation,positionpara, boundsize, b_xzplane);
 		};
 		for (int i = 0; i < 9; i++)
 		{
@@ -148,11 +158,13 @@ void UNineGridGeneraterComponent::timerworker()
 				}
 				if (deltax < (boundsize.X) && deltay < (boundsize.Z))
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
+					//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("recenter+++++++++++++++++++++++++++"));
 
 					resetallcell();
 					cellzs[i].iscenter = true;
 					FVector centerlocation = cellzs[i].mcell->GetActorLocation();
+					onfindnewcenterevent.Broadcast(precenterlocation, centerlocation, boundsize, b_xzplane);
+					precenterlocation = centerlocation;
 					FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
 					Cell_z* cellp = detectedcellbyoffset(up);
 					if (cellp)
@@ -254,7 +266,8 @@ void UNineGridGeneraterComponent::timerworker()
 					resetallcell();
 					cellzs[i].iscenter = true;
 					FVector centerlocation = cellzs[i].mcell->GetActorLocation();
-
+					onfindnewcenterevent.Broadcast(precenterlocation, centerlocation, boundsize, b_xzplane);
+					precenterlocation = centerlocation;
 					FVector up = centerlocation + FVector(boundsize.X * 2, 0, 0);
 					Cell_z* cellp = detectedcellbyoffset(up);
 					if (cellp)

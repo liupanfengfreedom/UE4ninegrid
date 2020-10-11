@@ -32,15 +32,21 @@ class NINEGRID_API UNineGridGeneraterComponent : public UActorComponent
 	FTimerHandle th;
 	void timerworker();
 	FVector boundsize;
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnfindnewspawnpoint, const FVector&, location, const FVector&, boundsize, bool, b_isxzplane);
+	FVector precenterlocation=FVector(0xffffffff);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnfindnewspawnpoint, const FVector&, oldlocation, const FVector&, newlocation, const FVector&, boundsize, bool, b_isxzplane);
 public:
+	//FVector location = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector()* forwardoffset);
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "NineGrid")
+    float forwardoffset;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnfindnewspawnpoint onfindnewspawnpointevent;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnfindnewspawnpoint onfindnewcenterevent;
 	// Sets default values for this component's properties
 	UNineGridGeneraterComponent();
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "NineGrid")
 	TSubclassOf<class AActor> Cellclass;
-	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "NineGrid")
 	bool b_xzplane;
 protected:
 	// Called when the game starts
